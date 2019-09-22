@@ -1,26 +1,41 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {Component} from 'react';
+import ScrollContainer from 'react-indiana-drag-scroll'
+import './app.css';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component {
+  constructor() {
+    super();
+    this.state = {
+      files: []
+    }
+  }
+
+  onChangeHandler = (e) => {
+    console.log(e.target.files[0])
+    const newFiles = [...this.state.files, e.target.files[0]];
+    this.setState({
+      files: newFiles
+    })
+    console.log(this.state);
+  }
+
+  render() {
+    return (
+      <div className="App">
+        <input className="btn-upload" type="file" onChange={this.onChangeHandler}/>
+        <ScrollContainer 
+          className="scroll-container scrollable" 
+          hideScrollbars={false}
+          >
+          <div className="inner" >
+            <div className="workspace">
+              asdafsafsdfsdsgdfg
+            </div>
+          </div>
+        </ScrollContainer>
+      </div>
+    );
+  }
 }
 
 export default App;
