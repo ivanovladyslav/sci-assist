@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll'
+import File from './components/file';
 import './app.css';
 
 class App extends Component {
@@ -20,6 +21,13 @@ class App extends Component {
   }
 
   render() {
+    const { files } = this.state;
+    const filesToShow = files.map((item) => {
+      return (
+        <File name={item.name} />
+      )
+    })
+
     return (
       <div className="App">
         <input className="btn-upload" type="file" onChange={this.onChangeHandler}/>
@@ -29,7 +37,7 @@ class App extends Component {
           >
           <div className="inner" >
             <div className="workspace">
-              asdafsafsdfsdsgdfg
+              {filesToShow}
             </div>
           </div>
         </ScrollContainer>
