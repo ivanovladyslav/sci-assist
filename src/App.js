@@ -7,8 +7,10 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
+      loggedIn: false,
       files: []
     }
+
     this.getFiles = () => {
       axios.get('http://127.0.0.1:4000/api')
       .then((res, err) => {     
@@ -18,6 +20,37 @@ class App extends Component {
       })
       .then(() => console.log(this.state))
     }
+
+    this.authenticate = () => {
+      axios.get('http://127.0.0.1:4000/api/authenticate').then((res) =>{
+          // window.open(res.data, '_blank');
+          console.log(res.data.loggedIn);
+          if(!res.data.loggedIn) {
+            const app = this;
+            const child = window.open(res.data,'','toolbar=0,status=0,width=626,height=436');
+            const timer = setInterval(checkChild, 500);
+            function checkChild() {
+              console.log(child.closed);
+              if (child.closed) {
+                  axios.get('http://127.0.0.1:4000/api/isAuthenticated').then((res) => {
+                    if(res.data.loggedIn) {
+                      app.setState({
+                        loggedIn: true
+                      })
+                      app.getFiles();
+                    }
+                  }); 
+                  clearInterval(timer);
+                }
+              }
+          } else {
+            this.getFiles();
+          }
+        }
+      );
+    }
+
+
 
     this.onChangeHandler = (e) => {
       const app = this;
@@ -37,7 +70,9 @@ class App extends Component {
   }
 
   componentDidMount() {
-    this.getFiles();
+    if(!this.state.loggedIn) {
+      this.authenticate();
+    } 
   }
 
 
@@ -45,7 +80,7 @@ class App extends Component {
     const { files } = this.state;
     const filesToShow = files.map((item) => {
       return (
-        <File name={item.name} thumbnail={item.thumbnailLink}/>
+        <File name={item.name} thumbnail={item.thumbnailLink} link={item.link}/>
       )
     })
 
@@ -59,23 +94,10 @@ class App extends Component {
             <input className="btn-input-hide" type="file" onChange={this.onChangeHandler}/>
           </div>
         </form>
-        {/* <ScrollContainer 
-          className="scroll-container scrollable" 
-          hideScrollbars={false}
-          >
-          <div className="inner" >
-            <div className="workspace">
-              {filesToShow}
-            </div>
-          </div>
-        </ScrollContainer> */}
 
         <div className="workspace">
               {filesToShow}
         </div>
-        {/* <ScrollBox style={{height: '1000px; width: 1000px'}} axes={ScrollAxes.XY} fastTrack={FastTrack.PAGING}>
-          {filesToShow}
-        </ScrollBox> */}
       </div>
     );
   }
