@@ -52,16 +52,15 @@ class App extends Component {
     });
     }
 
-    this.authenticate = () => {
+    this.authenticate = async () => {
       axios.get(URL+'/api/authenticate').then((res) =>{
           // window.open(res.data, '_blank');
           console.log(res.data.loggedIn);
           if(!res.data.loggedIn) {
             const app = this;
-            const child = window.open(res.data,'','toolbar=0,status=0,width=626,height=436');
+            const child = await window.open(res.data,'','toolbar=0,status=0,width=626,height=436');
             const timer = setInterval(checkChild, 500);
             function checkChild() {
-              console.log(child.closed);
               if (child.closed) {
                   axios.get(URL+'/api/isAuthenticated').then((res) => {
                     if(res.data.loggedIn) {
