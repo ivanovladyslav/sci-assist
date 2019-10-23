@@ -52,13 +52,13 @@ class App extends Component {
     });
     }
 
-    this.authenticate = async () => {
+    this.authenticate = () => {
       axios.get(URL+'/api/authenticate').then((res) =>{
           // window.open(res.data, '_blank');
           console.log(res.data.loggedIn);
           if(!res.data.loggedIn) {
             const app = this;
-            const child = await window.open(res.data,'','toolbar=0,status=0,width=626,height=436');
+            const child = window.open(res.data,'','toolbar=0,status=0,width=626,height=436');
             const timer = setInterval(checkChild, 500);
             function checkChild() {
               if (child.closed) {
