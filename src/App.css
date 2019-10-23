@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap&subset=cyrillic');
+
 .App {
     width: 100wh;
     height: 98vh;
@@ -6,6 +8,15 @@
 .scrollable {
     width: 100%;
     height: 100%;
+}
+
+.App-back {
+  z-index: -999;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .inner {
@@ -22,14 +33,25 @@
 .box {
     position: absolute;
     display: block;
-    background-color: beige;
-}
-
-.box-1{
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: normal;
+    text-align: center;
     left: 200px;
     top: 400px;
-    width: 60px;
-    height: 60px;
+    border: 1px solid #27C8B4;
+    border-radius: 5px;
+    padding: 10px 0;
+}
+
+.box:hover {
+  border-color: gold;
+  cursor: pointer;
+}
+
+.box p{
+  display: block;
+  width: 240px;
 }
 
 .btn-upload {
@@ -104,4 +126,38 @@
     opacity: 1;
     transition: all 0.2s ease;
     cursor: pointer;
+  }
+
+  .btn-save {
+    position: absolute;
+    left: 300px;
+  }
+  .btn-add {
+    position: absolute;
+    left: 200px;
+  }
+
+  .editor-container {
+    display: inline-block;
+    position: fixed;
+    top: 0;
+    transition: 1s;
+  }
+
+  .active {
+    right:0;
+  }
+  .inactive {
+    right: -400px;
+  }
+
+  .DraftEditor-root {
+    width: 300px;
+    height: 300px;
+
+    background-color: beige;
+  }
+  .DraftEditor-editorContainer,
+  .public-DraftEditor-content {
+    height: 100%;
   }
