@@ -4,7 +4,7 @@ import File from './components/file';
 import TextEditor from './components/editor';
 import axios from 'axios';
 import './App.css';
-import URL from './env.js';
+import URL from './environment/env';
 
 class App extends Component {
   constructor() {
@@ -15,11 +15,12 @@ class App extends Component {
       filesToShow: [],
       edit: false,
       fileEditId: "",
-      fileEditCurrentText: EditorState.createEmpty()
+      fileEditCurrentText: EditorState.createEmpty(),
+      token: ""
     }
 
     this.getFiles = () => {
-      axios.get(URL+'/api')
+      axios.get(URL+'/api', { params: {token: this.state.token} })
       .then((res, err) => {     
         this.setState({
           files: res.data,
@@ -27,12 +28,8 @@ class App extends Component {
             this.myRef = React.createRef();
             let textToInsert;
             if(!item.text || item.text === "") {
-              console.log("empty")
-              console.log(item.text);
               textToInsert = EditorState.createEmpty();
             } else {
-              console.log("FUCKAUEHAEURAHRAURHEU")
-              console.log(item.text);
               textToInsert = EditorState.createWithContent(convertFromRaw(item.text));
             }
             return (
@@ -46,53 +43,48 @@ class App extends Component {
                     y={item.y}
                     text={textToInsert}
                />
-            )
-        })
+          )})
+        });
       });
-    });
     }
 
     this.authenticate = () => {
-      axios.get(URL+'/api/authenticate').then((res) =>{
-          // window.open(res.data, '_blank');
-          console.log(res.data.loggedIn);
-          if(!res.data.loggedIn) {
+      axios.get(URL+'/api/authenticate', { params: {token: this.state.token} } ).then((res) => {
+          console.log(res.data);
+          if(!res.data.token) {
             const app = this;
             const child = window.open(res.data,'','toolbar=0,status=0,width=626,height=436');
             const timer = setInterval(checkChild, 500);
             function checkChild() {
               if (child.closed) {
                   axios.get(URL+'/api/isAuthenticated').then((res) => {
-                    if(res.data.loggedIn) {
-                      app.setState({
-                        loggedIn: true
-                      })
+                    if(res.data.token) {
+                      app.setState({ token: res.data.token })
                       app.getFiles();
                     }
                   }); 
                   clearInterval(timer);
                 }
               }
-          } else {
+          } else { 
             this.getFiles();
           }
-        }
-      );
+      });
     }
 
     this.onChangeHandler = (e) => {
       const app = this;
       const data = new FormData()
       data.append('file', e.target.files[0])
-      console.log(data);
       axios.post(URL+'/api/upload',
-        data
+        { token: this.state.token, data: data }
       ).then(function(){
-        console.log('SUCCESS!!');
+        // Make loading feature
+        console.log('Uploaded');
         app.getFiles();
       })
-      .catch(function(){
-        console.log('FAILURE!!');
+      .catch(function(e){
+        console.log(e);
       });
     }
 
@@ -104,17 +96,17 @@ class App extends Component {
         filesPositions.push({name: item.props.name, x: item.ref.current.x, y: item.ref.current.y, text: textToSend});
       });
       axios.post(URL+'/api/save',
-        filesPositions
+        { filesPositions: filesPositions, token: this.state.token }
       ).then(function(){
+        // Show message if saved
         console.log('SUCCESS!!');
       })
-      .catch(function(){
-        console.log('FAILURE!!');
+      .catch((e) => {
+        console.log(e);
       });
     }
 
     this.onEdit = (id) => {
-      console.log(this.state);
       this.setState({
         edit: true,
         fileEditId: id,
@@ -125,7 +117,7 @@ class App extends Component {
     this.textAdd = () => {
       const app = this;
       axios.post(URL+'/api/upload-text',
-          "please"
+          { token: this.state.token }
         ).then(function(){
           console.log('SUCCESS!!');
           app.getFiles();
@@ -136,10 +128,7 @@ class App extends Component {
     }
     
     this.setEditorStateToFalse = () => {
-      this.setState({
-        edit:false
-      });
-      console.log(this.state);
+      this.setState({ edit: false });
     }
 
     this.textSave = () => {
@@ -152,16 +141,14 @@ class App extends Component {
             text: this.editorRef.current.getData()
           }
         };
-        console.log(fileToUpdate);
 
         const newFilesToShow = [
           ...data.slice(0,this.state.fileEditId),
           fileToUpdate,
           ...data.slice(this.state.fileEditId+1)
         ];
-        console.log(newFilesToShow);
-        return {
 
+        return {
           fileEditCurrentText: this.editorRef.current.getData(),
           filesToShow: newFilesToShow,
         };
@@ -170,9 +157,8 @@ class App extends Component {
   }
 
   componentDidMount() {
-    if(!this.state.loggedIn) {
+    if(!this.state.loggedIn) 
       this.authenticate();
-    } 
   }
 
 
