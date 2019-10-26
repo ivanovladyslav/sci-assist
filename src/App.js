@@ -20,7 +20,7 @@ class App extends Component {
     }
 
     this.getFiles = () => {
-      axios.get(URL+'/api', { params: {token: this.state.token} })
+      axios.get(URL+'/api', { params: { userId: this.state.userId} })
       .then((res, err) => {     
         this.setState({
           files: res.data,
@@ -50,24 +50,22 @@ class App extends Component {
 
     this.authenticate = () => {
       axios.get(URL+'/api/authenticate', { params: {token: this.state.token} } ).then((res) => {
-          console.log(res.data);
-          if(!res.data.token) {
-            const app = this;
-            const child = window.open(res.data,'','toolbar=0,status=0,width=626,height=436');
-            const timer = setInterval(checkChild, 500);
-            function checkChild() {
-              if (child.closed) {
-                  axios.get(URL+'/api/isAuthenticated').then((res) => {
-                    if(res.data.token) {
-                      app.setState({ token: res.data.token })
-                      app.getFiles();
-                    }
-                  }); 
-                  clearInterval(timer);
+        const app = this;
+        const child = window.open(res.data,'','toolbar=0,status=0,width=626,height=436');
+        const timer = setInterval(checkChild, 500);
+        function checkChild() {
+          if (child.closed) {
+              axios.get(URL+'/api/isAuthenticated').then((res) => {
+                if(res.data.token) {
+                  axios.get('https://www.googleapis.com/oauth2/v3/tokeninfo?id_token='+res.data.token.id_token).then((res)=>{
+                    app.setState({ userId: res.data.sub })
+                    console.log(res.data.sub);
+                    app.getFiles();
+                  })
                 }
-              }
-          } else { 
-            this.getFiles();
+              }); 
+              clearInterval(timer);
+            }
           }
       });
     }
@@ -76,8 +74,9 @@ class App extends Component {
       const app = this;
       const data = new FormData()
       data.append('file', e.target.files[0])
+      data.append('userId', this.state.userId)
       axios.post(URL+'/api/upload',
-        { token: this.state.token, data: data }
+        data
       ).then(function(){
         // Make loading feature
         console.log('Uploaded');
@@ -96,7 +95,7 @@ class App extends Component {
         filesPositions.push({name: item.props.name, x: item.ref.current.x, y: item.ref.current.y, text: textToSend});
       });
       axios.post(URL+'/api/save',
-        { filesPositions: filesPositions, token: this.state.token }
+        { filesPositions: filesPositions, userId: this.state.userId }
       ).then(function(){
         // Show message if saved
         console.log('SUCCESS!!');
@@ -117,7 +116,7 @@ class App extends Component {
     this.textAdd = () => {
       const app = this;
       axios.post(URL+'/api/upload-text',
-          { token: this.state.token }
+          { userId: this.state.userId }
         ).then(function(){
           console.log('SUCCESS!!');
           app.getFiles();
