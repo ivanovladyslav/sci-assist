@@ -159,18 +159,27 @@ class App extends Component {
     this.textSave = () => {
       this.setState(() => {
         const data = this.state.filesToShow;
+        const file = data.filter((obj) => {
+          return obj.props.id === this.state.fileEditId
+        })
+        console.log("THIS.STATE.FILES_TO_SHOW:")
+        console.log(this.state.filesToShow);
+        const index = data.indexOf(file[0]);
+
+        console.log("id "+index);
+        console.log(data[index]);
         const fileToUpdate = {
-          ...data[this.state.fileEditId],
+          ...data[index],
           props: {
-            ...data[this.state.fileEditId].props,
+            ...data[index].props,
             text: this.editorRef.current.getData()
           }
         };
 
         const newFilesToShow = [
-          ...data.slice(0,this.state.fileEditId),
+          ...data.slice(0,index),
           fileToUpdate,
-          ...data.slice(this.state.fileEditId+1)
+          ...data.slice(index+1)
         ];
         return {
           fileEditCurrentText: this.editorRef.current.getData(),
