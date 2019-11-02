@@ -10,8 +10,6 @@ export default class File extends Component {
         this.text = this.props.text;
         this.id = this.props.id;
 
-        console.log(this.props);
-
         this.getOffset = () => {
             return {x: this.x, y: this.y};
         }

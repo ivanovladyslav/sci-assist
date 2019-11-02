@@ -1,5 +1,8 @@
-import React, {Component} from 'react';
+import React, {Component, useCallback} from 'react';
 import {EditorState, convertToRaw, convertFromRaw} from 'draft-js';
+import {useDropzone} from 'react-dropzone'
+import Dropzone from 'react-dropzone'
+
 import File from './components/file';
 import TextEditor from './components/editor';
 import axios from 'axios';
@@ -16,13 +19,17 @@ class App extends Component {
       edit: false,
       fileEditId: "",
       fileEditCurrentText: EditorState.createEmpty(),
-      token: ""
+      token: "",
+      loading: false
     }
 
     this.getFiles = () => {
+      this.setState({ filesToShow: "", loading: true });
       axios.get(URL+'/api', { params: { userId: this.state.userId} })
-      .then((res, err) => {     
+      .then((res, err) => { 
+        console.log(res.data);
         this.setState({
+          loading: false,
           files: res.data,
           filesToShow: res.data.map((item) => {
             this.myRef = React.createRef();
@@ -49,6 +56,7 @@ class App extends Component {
     }
 
     this.authenticate = () => {
+      this.setState({ loading: true });
       axios.get(URL+'/api/authenticate', { params: {token: this.state.token} } ).then((res) => {
         const app = this;
         const child = window.open(res.data,'','toolbar=0,status=0,width=626,height=436');
@@ -56,12 +64,9 @@ class App extends Component {
         function checkChild() {
           if (child.closed) {
               axios.get(URL+'/api/isAuthenticated').then((res) => {
-                if(res.data.token) {
-                  axios.get('https://www.googleapis.com/oauth2/v3/tokeninfo?id_token='+res.data.token.id_token).then((res)=>{
-                    app.setState({ userId: res.data.sub })
-                    console.log(res.data.sub);
-                    app.getFiles();
-                  })
+                if(res) {                    
+                  app.setState({ userId: res.data.userId, loading: false })
+                  app.getFiles();
                 }
               }); 
               clearInterval(timer);
@@ -71,16 +76,21 @@ class App extends Component {
     }
 
     this.onChangeHandler = (e) => {
+      this.uploadFile(e.target.files[0]);
+    }
+
+    this.uploadFile = (file) => {
+      this.setState({ loading: true });
       const app = this;
       const data = new FormData()
-      data.append('file', e.target.files[0])
+      data.append('file', file)
       data.append('userId', this.state.userId)
       axios.post(URL+'/api/upload',
         data
       ).then(function(){
-        // Make loading feature
-        console.log('Uploaded');
-        app.getFiles();
+        console.log("Uploaded!!");    
+        app.setState({ loading: false });
+        setTimeout(app.getFiles(), 3000);        
       })
       .catch(function(e){
         console.log(e);
@@ -88,6 +98,8 @@ class App extends Component {
     }
 
     this.workspaceSave = (e) => {
+      const app = this;
+      this.setState({ loading: true });
       e.stopPropagation();
       let filesPositions = [];
       this.state.filesToShow.map((item) => {
@@ -97,8 +109,7 @@ class App extends Component {
       axios.post(URL+'/api/save',
         { filesPositions: filesPositions, userId: this.state.userId }
       ).then(function(){
-        // Show message if saved
-        console.log('SUCCESS!!');
+        app.setState({ loading: false });
       })
       .catch((e) => {
         console.log(e);
@@ -106,24 +117,39 @@ class App extends Component {
     }
 
     this.onEdit = (id) => {
+      const file = this.state.filesToShow.filter((obj) => {
+        return obj.props.id === id
+      })
+      const index = this.state.filesToShow.indexOf(file[0]);
       this.setState({
         edit: true,
         fileEditId: id,
-        fileEditCurrentText: this.state.filesToShow[id].props.text
+        fileEditCurrentText: this.state.filesToShow[index].props.text
       });
     }
 
     this.textAdd = () => {
+      this.setState({ loading: true });
       const app = this;
-      axios.post(URL+'/api/upload-text',
-          { userId: this.state.userId }
-        ).then(function(){
-          console.log('SUCCESS!!');
-          app.getFiles();
-        })
-        .catch(function(){
-          console.log('FAILURE!!');
-        });
+      axios.post(URL+'/api/upload-text', { userId: this.state.userId })
+      .then(() => {
+        this.setState({ loading: false });
+        app.getFiles();
+      })
+      .catch(() => {
+        console.log('Upload error');
+      });
+    }
+
+    this.delete = () => {
+      this.setState({ loading: true });
+      const app = this;
+      axios.post(URL+'/api/delete', { fileId: this.state.fileEditId, userId: this.state.userId }).then(() => {
+        this.setState({ loading: false });
+        app.getFiles();
+      }).catch(() => {
+        console.log("Delete error");
+      });
     }
     
     this.setEditorStateToFalse = () => {
@@ -146,7 +172,6 @@ class App extends Component {
           fileToUpdate,
           ...data.slice(this.state.fileEditId+1)
         ];
-
         return {
           fileEditCurrentText: this.editorRef.current.getData(),
           filesToShow: newFilesToShow,
@@ -160,32 +185,41 @@ class App extends Component {
       this.authenticate();
   }
 
-
-  render() {
+  render() {  
     this.editorRef = React.createRef();
     const editorState = this.state.edit ? 'active' : 'inactive';
+    const loadingState = this.state.loading ? 'loader-show' : 'loader-hide';
 
     return (
-      <div className="App" onClick={this.setEditorStateToFalse}>
-        <form id="uploadForm" enctype="multipart/form-data">
-          <div className="btn-upload">
-            <img className="vector1" src="https://i.ibb.co/whWv1B8/Vector.png"></img>
-            <img className="vector2" src="https://i.ibb.co/2yg1z0M/Vector2.png"></img>
-            <p>Загрузить</p>
-            <input className="btn-input-hide" type="file" onChange={this.onChangeHandler}/>
-          </div>
-        </form>
-        <button className="btn-save" onClick={this.workspaceSave}>Сохранить</button>
-        <button className="btn-add" onClick={this.textAdd}>Добавить заметку</button>
+      // <Dropzone onDrop={acceptedFiles => this.uploadFile(acceptedFiles[0])}>
+      // {({getRootProps, getInputProps}) => (
+      //   <section> 
+      //     {...getRootProps()}
+            <div  className="App" onClick={this.setEditorStateToFalse}>
+              <div className={ `loader ${loadingState}` }></div>
+              <form id="uploadForm" enctype="multipart/form-data">
+                <div className="btn btn-upload">
+                  <img className="vector1" src="https://i.ibb.co/whWv1B8/Vector.png"></img>
+                  <img className="vector2" src="https://i.ibb.co/2yg1z0M/Vector2.png"></img>
+                  <p>Загрузить</p>
+                  <input className="btn-input-hide" type="file" onChange={this.onChangeHandler}/>
+                </div>
+              </form>
+              <button className="btn btn-save" onClick={this.workspaceSave}>Сохранить рабочее пространство</button>
+              <button className="btn btn-add" onClick={this.textAdd}>Добавить заметку</button>
 
-        <div className="workspace">
-          {this.state.filesToShow}
-        </div>
-        <div onClick={(e) => e.stopPropagation()} className={`editor-container ${editorState}`}>
-          <TextEditor ref={this.editorRef} content={this.state.fileEditCurrentText}/>
-          <button className="btn-add" onClick={this.textSave}>Сохранить</button>
-        </div>
-      </div>
+              <div className="workspace">
+                {this.state.filesToShow}
+              </div>
+              <div onClick={(e) => e.stopPropagation()} className={`editor-container ${editorState}`}>
+                <TextEditor ref={this.editorRef} content={this.state.fileEditCurrentText}/>
+                <button className="btn btn-save-note" onClick={this.textSave}>Сохранить заметку</button>
+                <button className="btn btn-delete-file" onClick={this.delete}>Удалить элемент</button>
+              </div>
+            </div>
+      //   </section>
+      //   )}
+      // </Dropzone> 
     );
   }
 }

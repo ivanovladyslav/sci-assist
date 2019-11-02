@@ -5,13 +5,15 @@ export default class TextEditor extends Component {
     constructor(props) {
         super(props);
 
-        this.onChange = (editorState) => this.setState({editorState});
+        this.onChange = (editorState) => {
+          this.setState({editorState});
+          console.log();
+        }
         this.state = {editorState: this.props.content};
       
 
         this.getData = () => {
           const state = this.state.editorState;
-          console.log(state);
           return state;
         }
     }
@@ -20,6 +22,7 @@ export default class TextEditor extends Component {
       this.setState({
         editorState: newp.content
       });
+      console.log("got props");
     }
 
     render() {
