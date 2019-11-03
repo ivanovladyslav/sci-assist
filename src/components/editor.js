@@ -22,7 +22,6 @@ export default class TextEditor extends Component {
       this.setState({
         editorState: newp.content
       });
-      console.log("got props");
     }
 
     render() {
