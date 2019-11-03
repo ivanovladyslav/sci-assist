@@ -13,9 +13,7 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
-      loggedIn: false,
       files: [],
-      filesToShow: [],
       edit: false,
       fileEditId: "",
       fileEditCurrentText: EditorState.createEmpty(),
@@ -26,34 +24,32 @@ class App extends Component {
     this.getFiles = () => {
       this.setState({ filesToShow: "", loading: true });
       axios.get(URL+'/api', { params: { userId: this.state.userId} })
-      .then((res, err) => { 
-        console.log(res.data);
+      .then((res, err) => {         
+        const filesData = res.data.map((item) => {
+          this.myRef = React.createRef();
+          const textToInsert = (!item.text || item.text === "") ? 
+          EditorState.createEmpty() :            
+          EditorState.createWithContent(convertFromRaw(item.text));
+
+          return({
+            id: item.id,
+            name: item.name,
+            thumbnail: item.thumbnailLink,
+            link: item.link,
+            x: item.x,
+            y: item.y,
+            text: textToInsert,
+            ref: this.myRef,
+            onClick: () => this.onEdit(item.id)
+          });
+        });
         this.setState({
           loading: false,
-          files: res.data,
-          filesToShow: res.data.map((item) => {
-            this.myRef = React.createRef();
-            let textToInsert;
-            if(!item.text || item.text === "") {
-              textToInsert = EditorState.createEmpty();
-            } else {
-              textToInsert = EditorState.createWithContent(convertFromRaw(item.text));
-            }
-            return (
-              <File ref={this.myRef} 
-                    id={item.id}
-                    onClick={() => this.onEdit(item.id)} 
-                    name={item.name} 
-                    thumbnail={item.thumbnailLink} 
-                    link={item.link} 
-                    x={item.x} 
-                    y={item.y}
-                    text={textToInsert}
-               />
-          )})
+          files: filesData
         });
       });
     }
+    
 
     this.authenticate = () => {
       this.setState({ loading: true });
@@ -85,10 +81,8 @@ class App extends Component {
       const data = new FormData()
       data.append('file', file)
       data.append('userId', this.state.userId)
-      axios.post(URL+'/api/upload',
-        data
-      ).then(function(){
-        console.log("Uploaded!!");    
+      axios.post(URL+'/api/upload', data)
+      .then(function(){
         app.setState({ loading: false });
         setTimeout(app.getFiles(), 3000);        
       })
@@ -102,12 +96,17 @@ class App extends Component {
       this.setState({ loading: true });
       e.stopPropagation();
       let filesPositions = [];
-      this.state.filesToShow.map((item) => {
-        let textToSend = convertToRaw(item.props.text.getCurrentContent());
-        filesPositions.push({name: item.props.name, x: item.ref.current.x, y: item.ref.current.y, text: textToSend});
+      this.state.files.map((item) => {
+        let textToSend = convertToRaw(item.text.getCurrentContent());
+        filesPositions.push({
+          name: item.name, 
+          x: item.ref.current.x,
+          y: item.ref.current.y,
+          text: textToSend
+        });
       });
       axios.post(URL+'/api/save',
-        { filesPositions: filesPositions, userId: this.state.userId }
+        { filesPositions, userId: this.state.userId }
       ).then(function(){
         app.setState({ loading: false });
       })
@@ -117,14 +116,15 @@ class App extends Component {
     }
 
     this.onEdit = (id) => {
-      const file = this.state.filesToShow.filter((obj) => {
-        return obj.props.id === id
+      const { files } = this.state;
+      const file = files.filter((obj) => {
+        return obj.id === id
       })
-      const index = this.state.filesToShow.indexOf(file[0]);
+      const index = files.indexOf(file[0]);
       this.setState({
         edit: true,
         fileEditId: id,
-        fileEditCurrentText: this.state.filesToShow[index].props.text
+        fileEditCurrentText: files[index].text
       });
     }
 
@@ -158,21 +158,18 @@ class App extends Component {
 
     this.textSave = () => {
       this.setState(() => {
-        const data = this.state.filesToShow;
+        const data = this.state.files;
         const file = data.filter((obj) => {
-          return obj.props.id === this.state.fileEditId
+          return obj.id === this.state.fileEditId
         })
         console.log("THIS.STATE.FILES_TO_SHOW:")
-        console.log(this.state.filesToShow);
+        console.log(this.state.files);
         const index = data.indexOf(file[0]);
         console.log("id "+index);
         console.log(data[index]);
         const fileToUpdate = {
           ...data[index],
-          props: {
-            ...data[index].props,
-            text: this.editorRef.current.getData()
-          }
+          text: this.editorRef.current.getData()
         };
 
         const newFilesToShow = [
@@ -182,21 +179,37 @@ class App extends Component {
         ];
         return {
           fileEditCurrentText: this.editorRef.current.getData(),
-          filesToShow: newFilesToShow,
+          files: newFilesToShow,
         };
       });        
     }
   }
 
   componentDidMount() {
-    if(!this.state.loggedIn) 
-      this.authenticate();
+    this.authenticate();
   }
 
   render() {  
     this.editorRef = React.createRef();
     const editorState = this.state.edit ? 'active' : 'inactive';
     const loadingState = this.state.loading ? 'loader-show' : 'loader-hide';
+
+    const filesToShow = this.state.files.map((item) => {             
+      return (
+        <File 
+              key={item.id}
+              id={item.id}
+              name={item.name} 
+              thumbnail={item.thumbnail} 
+              link={item.link} 
+              x={item.x} 
+              y={item.y}
+              text={item.textToInsert}
+              ref={item.ref}               
+              onClick={item.onClick} 
+          />
+      ) 
+    })
 
     return (
       <div  className="App" onClick={this.setEditorStateToFalse}>
@@ -213,7 +226,7 @@ class App extends Component {
         <button className="btn btn-add" onClick={this.textAdd}>Добавить заметку</button>
 
         <div className="workspace">
-          {this.state.filesToShow}
+          {filesToShow}
         </div>
         <div onClick={(e) => e.stopPropagation()} className={`editor-container ${editorState}`}>
           <TextEditor ref={this.editorRef} content={this.state.fileEditCurrentText}/>
