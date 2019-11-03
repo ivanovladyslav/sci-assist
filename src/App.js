@@ -165,7 +165,6 @@ class App extends Component {
         console.log("THIS.STATE.FILES_TO_SHOW:")
         console.log(this.state.filesToShow);
         const index = data.indexOf(file[0]);
-
         console.log("id "+index);
         console.log(data[index]);
         const fileToUpdate = {
@@ -200,35 +199,28 @@ class App extends Component {
     const loadingState = this.state.loading ? 'loader-show' : 'loader-hide';
 
     return (
-      // <Dropzone onDrop={acceptedFiles => this.uploadFile(acceptedFiles[0])}>
-      // {({getRootProps, getInputProps}) => (
-      //   <section> 
-      //     {...getRootProps()}
-            <div  className="App" onClick={this.setEditorStateToFalse}>
-              <div className={ `loader ${loadingState}` }></div>
-              <form id="uploadForm" enctype="multipart/form-data">
-                <div className="btn btn-upload">
-                  <img className="vector1" src="https://i.ibb.co/whWv1B8/Vector.png"></img>
-                  <img className="vector2" src="https://i.ibb.co/2yg1z0M/Vector2.png"></img>
-                  <p>Загрузить</p>
-                  <input className="btn-input-hide" type="file" onChange={this.onChangeHandler}/>
-                </div>
-              </form>
-              <button className="btn btn-save" onClick={this.workspaceSave}>Сохранить рабочее пространство</button>
-              <button className="btn btn-add" onClick={this.textAdd}>Добавить заметку</button>
+      <div  className="App" onClick={this.setEditorStateToFalse}>
+        <div className={ `loader ${loadingState}` }></div>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <div className="btn btn-upload">
+            <img className="vector1" src="https://i.ibb.co/whWv1B8/Vector.png"></img>
+            <img className="vector2" src="https://i.ibb.co/2yg1z0M/Vector2.png"></img>
+            <p>Загрузить</p>
+            <input className="btn-input-hide" type="file" onChange={this.onChangeHandler}/>
+          </div>
+        </form>
+        <button className="btn btn-save" onClick={this.workspaceSave}>Сохранить рабочее пространство</button>
+        <button className="btn btn-add" onClick={this.textAdd}>Добавить заметку</button>
 
-              <div className="workspace">
-                {this.state.filesToShow}
-              </div>
-              <div onClick={(e) => e.stopPropagation()} className={`editor-container ${editorState}`}>
-                <TextEditor ref={this.editorRef} content={this.state.fileEditCurrentText}/>
-                <button className="btn btn-save-note" onClick={this.textSave}>Сохранить заметку</button>
-                <button className="btn btn-delete-file" onClick={this.delete}>Удалить элемент</button>
-              </div>
-            </div>
-      //   </section>
-      //   )}
-      // </Dropzone> 
+        <div className="workspace">
+          {this.state.filesToShow}
+        </div>
+        <div onClick={(e) => e.stopPropagation()} className={`editor-container ${editorState}`}>
+          <TextEditor ref={this.editorRef} content={this.state.fileEditCurrentText}/>
+          <button className="btn btn-save-note" onClick={this.textSave}>Сохранить заметку</button>
+          <button className="btn btn-delete-file" onClick={this.delete}>Удалить элемент</button>
+        </div>
+      </div>
     );
   }
 }
