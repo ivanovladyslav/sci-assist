@@ -1,5 +1,6 @@
 import React, {Component, useCallback} from 'react';
 import {EditorState, convertToRaw, convertFromRaw} from 'draft-js';
+import LineTo from 'react-lineto';
 import axios from 'axios';
 
 import File from './components/file';
@@ -14,6 +15,10 @@ class App extends Component {
     const url = process.env.REACT_APP_BACKEND_URL;
     this.state = {
       files: [],
+      connectionEdit: false,
+      connectionNumber: 0,
+      connectionFirst: "",
+      connectionSecond: "",
       edit: false,
       fileEditId: "",
       fileEditCurrentText: EditorState.createEmpty(),
@@ -41,7 +46,8 @@ class App extends Component {
             y: item.y,
             text: textToInsert,
             ref: this.myRef,
-            onClick: () => this.onEdit(item.id)
+            onClick: () => this.onEdit(item.id),
+            conns: item.conns
           });
         });
 
@@ -49,6 +55,7 @@ class App extends Component {
           loading: false,
           files: filesData
         });
+        this.forceUpdate();
       });
     }
     
@@ -108,7 +115,8 @@ class App extends Component {
           name: item.name, 
           x: item.ref.current.x,
           y: item.ref.current.y,
-          text: textToSend
+          text: textToSend,
+          conns: item.conns
         });
       });
 
@@ -123,16 +131,40 @@ class App extends Component {
 
     // Get current file text and id when edit file 
     this.onEdit = (id) => {
-      const { files } = this.state;
-      const file = files.filter((obj) => {
-        return obj.id === id
-      })
-      const index = files.indexOf(file[0]);
-      this.setState({
-        edit: true,
-        fileEditId: id,
-        fileEditCurrentText: files[index].text
-      });
+      if(!this.state.connectionEdit) {
+        const { files } = this.state;
+        const file = files.filter((obj) => {
+          return obj.id === id
+        })
+        const index = files.indexOf(file[0]);
+        this.setState({
+          edit: true,
+          fileEditId: id,
+          fileEditCurrentText: files[index].text
+        });
+      } else {
+        this.setState((prevState) => {
+          if(prevState.connectionFirst == "") {
+            return {
+              connectionFirst: id
+            }
+          } else {
+            const conn = id;
+            const fileIdToUpdate = this.getFileById(this.state.connectionFirst);
+            const prevConns = this.state.files[fileIdToUpdate].conns;            
+            const newConns = [
+               ...prevConns,
+               conn
+            ];
+            const newFiles = this.updateArray(this.state.files, fileIdToUpdate, "conns", newConns);
+            return {
+              files: newFiles,
+              connectionFirst: "",
+              connectionEdit: false
+            }
+          }
+        });
+      }
     }
 
     // Create note and send it to backend then call getFiles()
@@ -170,27 +202,40 @@ class App extends Component {
     // Save current note text
     this.textSave = () => {
       this.setState(() => {
-        const data = this.state.files;
-        const file = data.filter((obj) => {
-          return obj.id === this.state.fileEditId
-        })
-
-        const index = data.indexOf(file[0]);
-        const fileToUpdate = {
-          ...data[index],
-          text: this.editorRef.current.getData()
-        };
-
-        const newFilesToShow = [
-          ...data.slice(0, index),
-          fileToUpdate,
-          ...data.slice(index + 1)
-        ];
+        const fileIdToUpdate = this.getFileById(this.state.fileEditId);
+        const newFilesToShow = this.updateArray(this.state.files, fileIdToUpdate, "text", this.editorRef.current.getData());
         return {
           fileEditCurrentText: this.editorRef.current.getData(),
           files: newFilesToShow,
         };
-      });        
+      });
+    }
+
+    this.getFileById = (id) => {
+      const file = this.state.files.filter((obj) => {
+        return obj.id === id
+      });
+
+      return this.state.files.indexOf(file[0]);
+    }
+
+    this.updateArray = (array, index, attr, value) => {
+      const elementToUpdate = {
+        ...array[index],
+        [attr]: value
+      };
+
+      return [
+        ...array.slice(0, index),
+        elementToUpdate,
+        ...array.slice(index + 1)
+      ];
+    }
+
+    this.connAdd = () => {
+      this.setState({
+        connectionEdit: true
+      })
     }
   }
 
@@ -221,6 +266,18 @@ class App extends Component {
       ) 
     })
 
+    const lines = this.state.files.map((item) => {
+      if(item.conns != []) {
+        for(let i = 0; i < item.conns.length; i++) {
+          return (
+            <LineTo from={`${item.id}`} to={`${item.conns[i]}`}/>
+          )
+        }
+      }        
+    });
+
+    console.log(lines);
+
     return (
       <div  className="App" onClick={ this.setEditorStateToFalse }>
 
@@ -237,6 +294,7 @@ class App extends Component {
 
         <div className="workspace">
           { filesToShow }
+          { lines }
         </div>
 
         <div onClick={(e) => e.stopPropagation()} className={ `editor-container ${ editorState }` }>
@@ -246,7 +304,8 @@ class App extends Component {
         </div>
 
         <button className="btn btn-save" onClick={ this.workspaceSave }>Сохранить рабочее пространство</button>
-        <button className="btn btn-add" onClick={ this.noteAdd }>Добавить заметку</button>
+        <button className="btn btn-add-note" onClick={ this.noteAdd }>Добавить заметку</button>
+        <button className="btn btn-add-conn" onClick={ this.connAdd }>Добавить связь</button>
 
       </div>
     );

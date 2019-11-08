@@ -40,8 +40,8 @@ export default class File extends Component {
     }
     render() {
         return (
-            <Draggable defaultPosition={{x: this.x, y: this.y}} positionOffset={{x: 0, y: 0}} onStop={this.handleStop}>
-                <div onClick={this.onClick} onDoubleClick={this.onDoubleClick} onMouseUp={this.onMove} className="box box-1" style={{top: 100, left: 50}}>
+            <Draggable defaultPosition={{x: this.x, y: this.y}} positionOffset={{x: 0, y: 0}} onDrag={this.handleStop}>
+                <div onClick={this.onClick} onDoubleClick={this.onDoubleClick} onMouseUp={this.onMove} className={`box box-1 ${this.id}`} style={{top: 100, left: 50}}>
                     <img src={this.props.thumbnail} draggable="false"></img>
                     <p>{this.props.name}</p>
                 </div>

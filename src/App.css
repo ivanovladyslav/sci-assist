@@ -58,7 +58,6 @@ body {
 
 .box p{
   display: block;
-  /* width: 200px; */
   font-size: 14px;
 }
 
@@ -146,9 +145,14 @@ body {
     right: 20px;
     bottom: 20px;
   }
-  .btn-add {
+  .btn-add-note {
     position: absolute;
     right: 240px;
+    bottom: 20px;
+  }
+  .btn-add-conn {
+    position: absolute;
+    right: 340px;
     bottom: 20px;
   }
   .btn-delete-file {
