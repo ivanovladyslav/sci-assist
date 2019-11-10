@@ -16,9 +16,7 @@ class App extends Component {
     this.state = {
       files: [],
       connectionEdit: false,
-      connectionNumber: 0,
       connectionFirst: "",
-      connectionSecond: "",
       edit: false,
       fileEditId: "",
       fileEditCurrentText: EditorState.createEmpty(),
@@ -143,28 +141,32 @@ class App extends Component {
           fileEditCurrentText: files[index].text
         });
       } else {
-        this.setState((prevState) => {
-          if(prevState.connectionFirst == "") {
-            return {
-              connectionFirst: id
-            }
-          } else {
-            const conn = id;
-            const fileIdToUpdate = this.getFileById(this.state.connectionFirst);
-            const prevConns = this.state.files[fileIdToUpdate].conns;            
-            const newConns = [
-               ...prevConns,
-               conn
-            ];
-            const newFiles = this.updateArray(this.state.files, fileIdToUpdate, "conns", newConns);
-            return {
-              files: newFiles,
-              connectionFirst: "",
-              connectionEdit: false
-            }
-          }
-        });
+        this.connectionEdit(id);
       }
+    }
+
+    this.connectionEdit = (currentFileId) => {
+      this.setState((prevState) => {
+        if(prevState.connectionFirst == "") {
+          return {
+            connectionFirst: currentFileId
+          }
+        } else {
+          const conn = currentFileId;
+          const fileIdToUpdate = this.getFileById(this.state.connectionFirst);
+          const prevConns = this.state.files[fileIdToUpdate].conns;            
+          const newConns = [
+             ...prevConns,
+             conn
+          ];
+          const newFiles = this.updateArray(this.state.files, fileIdToUpdate, "conns", newConns);
+          return {
+            files: newFiles,
+            connectionFirst: "",
+            connectionEdit: false
+          }
+        }
+      });
     }
 
     // Create note and send it to backend then call getFiles()
@@ -211,6 +213,16 @@ class App extends Component {
       });
     }
 
+    // add connection
+    this.connAdd = () => {
+      this.setState({
+        connectionEdit: true
+      })
+    }
+
+    // misc methods
+
+    // get actual index of file in files array by it's id
     this.getFileById = (id) => {
       const file = this.state.files.filter((obj) => {
         return obj.id === id
@@ -219,6 +231,7 @@ class App extends Component {
       return this.state.files.indexOf(file[0]);
     }
 
+    // get updated array
     this.updateArray = (array, index, attr, value) => {
       const elementToUpdate = {
         ...array[index],
@@ -231,12 +244,6 @@ class App extends Component {
         ...array.slice(index + 1)
       ];
     }
-
-    this.connAdd = () => {
-      this.setState({
-        connectionEdit: true
-      })
-    }
   }
 
   // Auth on load
@@ -248,6 +255,8 @@ class App extends Component {
     this.editorRef = React.createRef();
     const editorState = this.state.edit ? 'active' : 'inactive';
     const loadingState = this.state.loading ? 'loader-show' : 'loader-hide';
+    const fileConnectionEdit = this.state.connectionEdit ? 'file-connection-edit' : '';
+    const connectionEdit = this.state.connectionEdit ? 'notify-connection-edit-enabled' : 'notify-connection-edit-disabled';
 
     const filesToShow = this.state.files.map((item) => {             
       return (
@@ -262,24 +271,25 @@ class App extends Component {
               text={ item.textToInsert }
               ref={ item.ref }               
               onClick={ item.onClick } 
+              class={ fileConnectionEdit }
+              editState={ this.state.connectionEdit }
           />
       ) 
     })
-
     const lines = this.state.files.map((item) => {
       if(item.conns != []) {
-        for(let i = 0; i < item.conns.length; i++) {
-          return (
-            <LineTo from={`${item.id}`} to={`${item.conns[i]}`}/>
-          )
-        }
+          return item.conns.map((conn) => {
+            return (
+              <LineTo from={`${item.id}`} to={`${conn}`} className="connection"/>
+            )
+          });
       }        
     });
 
-    console.log(lines);
-
     return (
       <div  className="App" onClick={ this.setEditorStateToFalse }>
+
+        <div className={ `notify-connection-edit ${ connectionEdit }` }>Выберите 2 элемента, которые необходимо соединить</div>
 
         <div className={ `loader ${ loadingState }` }></div>
 

@@ -5,14 +5,14 @@ body {
 }
 
 .App {
-    width: 98vw;
-    height: 98vh;
-    outline: none;
+  width: 98vw;
+  height: 98vh;
+  outline: none;
 }
 
 .scrollable {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 }
 
 .App-back {
@@ -25,31 +25,33 @@ body {
 }
 
 .inner {
-    display: inline-block;
-    vertical-align: middle;
-    width: 4000px;
-    height: 4000px;
-    left: -2000px;
-    right: -2000px;
+  display: inline-block;
+  vertical-align: middle;
+  width: 4000px;
+  height: 4000px;
+  left: -2000px;
+  right: -2000px;
 }
 .workspace {
-    position: relative;
+  position: relative;
 }
 .box {
-    position: absolute;
-    display: block;
-    font-family: 'Roboto';
-    font-style: normal;
-    font-weight: normal;
-    text-align: center;
-    border-radius: 5px;
-    padding: 4px;
-    background-color: rgb(67, 88, 165);
-    color: white;
+  position: absolute;
+  display: block;
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: normal;
+  text-align: center;
+  border-radius: 5px;
+  padding: 4px;
+  background-color: rgb(67, 88, 165);
+  color: white;
+  
+  transition: 0.2s box-shadow;
 }
 
 .box img {
-    border-radius: 5px;
+  border-radius: 5px;
 }
 
 .box:hover {
@@ -62,156 +64,201 @@ body {
 }
 
 .btn {
-    position: absolute;
-    height: 36px;
+  position: fixed;
+  height: 36px;
+
+  background: #FFFFFF;
+  border: 1px solid #27C8B4;
+  box-sizing: border-box;
+  border-radius: 5px;
+
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 16px;
+  color: #27C8B4;
   
-    background: #FFFFFF;
-    border: 1px solid #27C8B4;
-    box-sizing: border-box;
-    border-radius: 5px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  }
+
+.btn-upload {
+  padding: 9px 18px 11px 36px;
+}
+
+.btn p {
+  margin:0;
+  cursor: pointer;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.btn-input-hide {
+  position: absolute;
+  z-index: 1000;
+  opacity: 0;
+  right: 0;
+  top: 0;
+  height: 100%;
+  font-size: 24px;
+  width: 100%;
+}
+
+.vector1 {
+  position: absolute;
+  top: 11px;
+  right: 93px;
+  bottom: 14px;
+  left: 19px;
+  opacity: 1;
+  cursor: pointer;
+}
+
+.vector2{
+  position: absolute;
+  top: 11px;
+  right: 93px;
+  bottom: 14px;
+  left: 19px;
+  opacity: 0;
+}
+
+.btn:hover {
+  cursor: pointer;
+  background: #27C8B4;
+  color: white;
+}
+
+.btn-upload:hover .vector1 {
+  opacity: 0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-upload:hover .vector2 {
+  opacity: 1;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-save {
+  right: 20px;
+  bottom: 20px;
+}
+.btn-add-note {
+  right: 240px;
+  bottom: 20px;
+}
+.btn-add-conn {
+  right: 376px;
+  bottom: 20px;
+}
+.btn-delete-file {
+  position: absolute;
+  margin-top: 10px;
+}
+.btn-save-note {
+  position: absolute;
+  margin-top: 10px;
+  right: 0px;
+}
+
+.editor-container {
+  display: inline-block;
+  position: fixed;
+  top: 10px;
+  transition: 1s;
+}
+
+.active {
+  right:10px;
+}
+.inactive {
+  right: -400px;
+}
+
+.DraftEditor-root {
+  width: 300px;
+  height: 300px;
+
+  background-color: #FFFEEB;
+  border: 1px solid #C6C6C6;
+  border-radius: 5px;
+  padding: 10px;
+  overflow-y: scroll;
+}
+.DraftEditor-editorContainer,
+.public-DraftEditor-content {
+  height: 100%;
+}
+
+.loader {
+  left: 50%;
+  bottom: 10px;
+  position: fixed;
+  border: 12px solid #cecece;
+  border-top: 12px solid #27C8B4;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  animation: spin 1s linear infinite;
+}
+
+.loader-show {
+  display: block;
+}
+
+.loader-hide {
+  display: none;
+}
+
+.connection {
+  border: 4px solid rgb(67, 88, 165)!important;
+  z-index: -1!important;
+  transition: 1s;
+}
+
+.file-connection-edit {
+  box-shadow: 0px 0px 5px 2px rgb(67, 88, 165);
+}
+
+.file-connection-chosen {
+  box-shadow: 0px 0px 5px 2px rgb(192, 209, 115);
+}
+
+.file-connection-edit:hover {
+  box-shadow: 0px 0px 5px 2px rgb(192, 209, 115);
+}
+
+.notify-connection-edit {
+  position: fixed;
+  transition: 0.5s;
+  left: 50%;
+  width: 340px;
+  margin-left: -170px; 
+  text-align: center;
   
-    font-family: Roboto;
-    font-style: normal;
-    font-weight: normal;
-    font-size: 12px;
-    line-height: 16px;
-    color: #27C8B4;
-    
-    transition: all 0.2s ease;
-    cursor: pointer;
-  }
+  border-radius: 5px;
+  padding: 10px;
+  background-color: white;
+  color: #27C8B4;
+  font-family: Roboto;
+  font-size: 12px;
+  border: 1px solid #27C8B4;
 
-  .btn-upload {
-    padding: 9px 18px 11px 36px;
-  }
+  z-index: 1000;
+}
 
-  .btn p {
-    margin:0;
-    cursor: pointer;
-    display: inline-block;
-    cursor: pointer;
-  }
-  
-  .btn-input-hide {
-    position: absolute;
-    z-index: 1000;
-    opacity: 0;
-    right: 0;
-    top: 0;
-    height: 100%;
-    font-size: 24px;
-    width: 100%;
-  }
+.notify-connection-edit-enabled {
+  top: 10px;
+}
 
-  .vector1 {
-    position: absolute;
-    top: 11px;
-    right: 93px;
-    bottom: 14px;
-    left: 19px;
-    opacity: 1;
-    cursor: pointer;
-  }
-  
-  .vector2{
-    position: absolute;
-    top: 11px;
-    right: 93px;
-    bottom: 14px;
-    left: 19px;
-    opacity: 0;
-  }
-  
-  .btn:hover {
-    cursor: pointer;
-    background: #27C8B4;
-    color: white;
-  }
-  
-  .btn-upload:hover .vector1 {
-    opacity: 0;
-    transition: all 0.2s ease;
-    cursor: pointer;
-  }
-  
-  .btn-upload:hover .vector2 {
-    opacity: 1;
-    transition: all 0.2s ease;
-    cursor: pointer;
-  }
+.notify-connection-edit-disabled {
+  top: -50px;
+}
 
-  .btn-save {
-    position: absolute;
-    right: 20px;
-    bottom: 20px;
-  }
-  .btn-add-note {
-    position: absolute;
-    right: 240px;
-    bottom: 20px;
-  }
-  .btn-add-conn {
-    position: absolute;
-    right: 340px;
-    bottom: 20px;
-  }
-  .btn-delete-file {
-    margin-top: 10px;
-  }
-  .btn-save-note {
-    margin-top: 10px;
-    right: 0px;
-  }
-
-  .editor-container {
-    display: inline-block;
-    position: fixed;
-    top: 10px;
-    transition: 1s;
-  }
-
-  .active {
-    right:10px;
-  }
-  .inactive {
-    right: -400px;
-  }
-
-  .DraftEditor-root {
-    width: 300px;
-    height: 300px;
-
-    background-color: #FFFEEB;
-    border: 1px solid #C6C6C6;
-    border-radius: 5px;
-    padding: 10px;
-  }
-  .DraftEditor-editorContainer,
-  .public-DraftEditor-content {
-    height: 100%;
-  }
-
-  .loader {
-    left: 50%;
-    bottom: 10px;
-    position: fixed;
-    border: 12px solid #cecece;
-    border-top: 12px solid #27C8B4;
-    border-radius: 50%;
-    width: 15px;
-    height: 15px;
-    animation: spin 1s linear infinite;
-  }
-
-  .loader-show {
-    display: block;
-  }
-
-  .loader-hide {
-    display: none;
-  }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
