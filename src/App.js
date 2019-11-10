@@ -12,7 +12,7 @@ class App extends Component {
   constructor() {
     super();
 
-    const url = process.env.REACT_APP_BACKEND_URL;
+    const url = process.env.REACT_APP_HEROKU_URL;
     this.state = {
       files: [],
       connectionEdit: false,
