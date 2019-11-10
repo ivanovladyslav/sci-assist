@@ -25,7 +25,7 @@ class App extends Component {
     }
 
     // Get files from backend
-    this.getFiles = () => {
+   this.getFiles = () => {
       this.setState({ filesToShow: "", loading: true });
       axios.get(url + '/api', { params: { userId: this.state.userId} })
       .then((res, err) => {    
@@ -84,8 +84,9 @@ class App extends Component {
     }
 
     // Upload file to the backend then call getFiles()
-    this.uploadFile = (file) => {
+    this.uploadFile = async (file) => {
       this.setState({ loading: true });
+      await this.workspaceSave();
       const app = this;
       const data = new FormData()
       data.append('file', file)
@@ -101,11 +102,10 @@ class App extends Component {
     }
 
     // Save elements positions and text
-    this.workspaceSave = (e) => {
+    this.workspaceSave = () => {
       const app = this;
       let filesPositions = [];
       this.setState({ loading: true });
-      e.stopPropagation();
 
       this.state.files.map((item) => {
         let textToSend = convertToRaw(item.text.getCurrentContent());
@@ -185,6 +185,7 @@ class App extends Component {
 
     // Delete element from the backend then call getFiles()
     this.delete = () => {
+      this.workspaceSave();
       this.setState({ loading: true });
       const app = this;
       axios.post(url + '/api/delete', { fileId: this.state.fileEditId, userId: this.state.userId })
