@@ -22,6 +22,8 @@ export default class File extends Component {
             this.x = data.x;
             this.y = data.y;
         }
+
+        console.log(this.props);
     }
 
     componentDidMount() {
@@ -54,11 +56,23 @@ export default class File extends Component {
         this.props.onClick();
     }
     render() {
+        const content = this.props.type === 'file' ? <img src={this.props.thumbnail} draggable="false"></img> : <div class="note-text">{this.props.text}</div>
+        const name = this.props.type !== 'note' ? <p>{this.props.name}</p> : ''
+        const elementType = () => {
+            switch (this.props.type) {
+                case 'file': 
+                    return 'element-file';
+                case 'note':
+                    return 'element-note';
+                default:
+                    break;
+            }
+        }
         return (
             <Draggable defaultPosition={{x: this.x, y: this.y}} positionOffset={{x: 0, y: 0}} onDrag={this.handleStop}>
-                <div onClick={this.onClick} onDoubleClick={this.onDoubleClick} onMouseUp={this.onMove} className={`box box-1 ${this.id} ${this.props.class} ${this.state.connectionEditClass}`} style={{top: 100, left: 50}}>
-                    <img src={this.props.thumbnail} draggable="false"></img>
-                    <p>{this.props.name}</p>
+                <div onClick={this.onClick} onDoubleClick={this.onDoubleClick} onMouseUp={this.onMove} className={`box box-1 ${this.id} ${this.props.class} ${this.state.connectionEditClass} ${elementType()}`} style={{top: 100, left: 50}}>
+                    {content}
+                    {name}
                 </div>
             </Draggable>
         )

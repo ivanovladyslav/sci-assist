@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Editor, convertFromRaw, convertToRaw, EditorState} from 'draft-js';
+import {Editor, convertFromRaw, EditorState} from 'draft-js';
 
 export default class TextEditor extends Component {
     constructor(props) {

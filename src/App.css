@@ -46,7 +46,6 @@ body {
   padding: 4px;
   background-color: rgb(67, 88, 165);
   color: white;
-  
   transition: 0.2s box-shadow;
 }
 
@@ -162,6 +161,28 @@ body {
   position: absolute;
   margin-top: 10px;
   right: 0px;
+}
+
+.note-text {
+  width: 140px;
+  word-wrap: break-word;
+  font-size: 14px;
+  height: 160px;
+  overflow-y: scroll;
+  background-color: #FFFEEB;
+  color: black;
+  padding: 5px;
+  text-align: left;
+  border-radius: 5px;
+}
+
+.note-text::-webkit-scrollbar { /* WebKit */
+  width: 0;
+  height: 0;
+}
+
+.element-note {
+  background-color: #F1B3B3;
 }
 
 .editor-container {
