@@ -11,7 +11,7 @@ class Workspace extends Component {
   constructor() {
     super();
 
-    const url = process.env.HEROKU;
+    const url = process.env.REACT_APP_HEROKU_URL;
     this.state = {
       files: [],
       connectionEdit: false,
