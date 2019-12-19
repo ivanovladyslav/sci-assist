@@ -56,7 +56,7 @@ export default class File extends Component {
         this.props.onClick();
     }
     render() {
-        const content = this.props.type === 'file' ? <img src={this.props.thumbnail} draggable="false"></img> : <div class="note-text">{this.props.text}</div>
+        const content = this.props.type === 'file' ? <img src={this.props.thumbnail} draggable="false"></img> : <div class="note-text" dangerouslySetInnerHTML={{ __html: this.props.text}}></div>
         const name = this.props.type !== 'note' ? <p>{this.props.name}</p> : ''
         const elementType = () => {
             switch (this.props.type) {

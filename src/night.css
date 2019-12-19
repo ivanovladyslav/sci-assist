@@ -1,0 +1,47 @@
+body.night {
+    background-color: #494949;
+}
+
+.btn-night {
+    left: 10px;
+    bottom: 20px;
+}
+
+.night .btn:not(:hover) {
+    background: #787878;
+}
+
+.night .box {
+    background-color: #333B57;
+}
+
+.night .element-note {
+    background-color: #8B6666;
+}
+
+.night .element-note .note-text{
+    background-color: #706F5D;
+    color: #B6B6AD;
+}
+
+.night .element-file {
+    background-color: #775841;
+    color: #B6B6AD;
+}
+
+.night .element-document {
+    background-color: #333B57;
+    color: #B6B6AD;
+}
+
+.night .DraftEditor-root {
+    background-color: #706F5D;
+    color: #B6B6AD;
+}
+/*editor*/
+.night .notify-connection-edit {
+    background-color: #787878;
+    color: #CECEC8;
+}
+
+

@@ -1,17 +1,22 @@
 import React, {Component, useCallback} from 'react';
 import {EditorState, convertToRaw, convertFromRaw} from 'draft-js';
+import DraftExporter from 'draft-js-exporter';
+import Popup from "reactjs-popup";
 import LineTo from 'react-lineto';
 import axios from 'axios';
+import NightButton from './NightButton';
 
 import File from './file';
 import TextEditor from './editor';
+import Dashboard from './dashboard';
 import '../App.css';
+
+const url = process.env.REACT_APP_HEROKU_URL;
 
 class Workspace extends Component {
   constructor() {
     super();
 
-    const url = process.env.REACT_APP_HEROKU_URL;
     this.state = {
       files: [],
       connectionEdit: false,
@@ -20,13 +25,15 @@ class Workspace extends Component {
       fileEditId: "",
       fileEditCurrentText: EditorState.createEmpty(),
       token: "",
-      loading: false
+      loading: false,
+      workspaces: null,
+      workspaceId: 'Main'
     }
 
     // Get files from backend
     this.getFiles = () => {
         this.setState({ filesToShow: "", loading: true });
-        axios.get(url + '/api', { params: { userId: this.state.userId} })
+        axios.get(url + '/api', { params: { userId: this.state.userId, workspaceId: this.state.workspaceId }})
         .then((res, err) => {    
           const filesData = res.data.map((item) => {
             this.myRef = React.createRef();
@@ -66,10 +73,11 @@ class Workspace extends Component {
         const timer = setInterval(checkChild, 500);
         function checkChild() {
           if (child.closed) {
-              axios.get(url + '/api/isAuthenticated').then((res) => {
+              axios.get(url + '/api/isAuthenticated').then(async (res) => {
                 if(res) {                    
                   app.setState({ userId: res.data.userId, loading: false })
-                  app.getFiles();
+                  await app.getFiles();
+                  app.getWorkspaces();
                 }
               }); 
               clearInterval(timer);
@@ -88,9 +96,10 @@ class Workspace extends Component {
       this.setState({ loading: true });
       await this.workspaceSave();
       const app = this;
-      const data = new FormData()
-      data.append('file', file)
-      data.append('userId', this.state.userId)
+      const data = new FormData();
+      data.append('file', file);
+      data.append('userId', this.state.userId);
+      data.append('workspaceId', this.state.workspaceId);
       axios.post(url + '/api/upload', data)
       .then(() => {
         app.setState({ loading: false });
@@ -118,7 +127,7 @@ class Workspace extends Component {
         });
       });
 
-      axios.post(url + '/api/save', { filesPositions, userId: this.state.userId })
+      axios.post(url + '/api/save', { filesPositions, userId: this.state.userId, workspaceId: this.state.workspaceId })
       .then(() => {
         app.setState({ loading: false });
       })
@@ -173,7 +182,7 @@ class Workspace extends Component {
     this.noteAdd = () => {
       this.setState({ loading: true });
       const app = this;
-      axios.post(url + '/api/upload-text', { userId: this.state.userId })
+      axios.post(url + '/api/upload-text', { userId: this.state.userId, workspaceId: this.state.workspaceId })
       .then(() => {
         this.setState({ loading: false });
         app.getFiles();
@@ -188,7 +197,7 @@ class Workspace extends Component {
       this.workspaceSave();
       this.setState({ loading: true });
       const app = this;
-      axios.post(url + '/api/delete', { fileId: this.state.fileEditId, userId: this.state.userId })
+      axios.post(url + '/api/delete', { fileId: this.state.fileEditId, userId: this.state.userId, workspaceId: this.state.workspaceId })
       .then(() => {
         this.setState({ loading: false });
         app.getFiles();
@@ -244,6 +253,23 @@ class Workspace extends Component {
         elementToUpdate,
         ...array.slice(index + 1)
       ];
+    }   
+        
+    this.getWorkspaces = () => {
+      axios.get(url + '/api/getWorkspaces', { params: { userId: this.state.userId } })
+      .then((data) => {
+          console.log(data);
+          this.setState({workspaces: data.data});
+      })
+    }
+
+    this.onWorkspaceChange = (e) => {
+      console.log(e.target.value);
+      this.setState({
+        workspaceId: e.target.value
+      }, () => {
+        this.getFiles();
+      });
     }
   }
 
@@ -254,12 +280,17 @@ class Workspace extends Component {
 
   render() {  
     this.editorRef = React.createRef();
+    let dashboard;
     const editorState = this.state.edit ? 'active' : 'inactive';
     const loadingState = this.state.loading ? 'loader-show' : 'loader-hide';
     const fileConnectionEdit = this.state.connectionEdit ? 'file-connection-edit' : '';
     const connectionEdit = this.state.connectionEdit ? 'notify-connection-edit-enabled' : 'notify-connection-edit-disabled';
+    const hideButtons = this.state.connectionEdit ? 'hide' : 'show';
 
-    const filesToShow = this.state.files.map((item) => {             
+    const filesToShow = this.state.files.map((item) => {  
+      const rawDraftContentBlock = convertToRaw(item.text.getCurrentContent());
+      const exporter = new DraftExporter(rawDraftContentBlock);
+      const contentExported = exporter.export();
       return (
         <File 
               key={ item.id }
@@ -269,7 +300,7 @@ class Workspace extends Component {
               link={ item.link } 
               x={ item.x } 
               y={ item.y }
-              text={ item.text.getCurrentContent().getPlainText('\u0001') }
+              text={ contentExported }
               ref={ item.ref }               
               onClick={ item.onClick } 
               class={ fileConnectionEdit }
@@ -288,6 +319,12 @@ class Workspace extends Component {
       }        
     });
 
+    if (this.state.workspaces !== null) {
+      dashboard = <Dashboard currentWorkspace={this.state.workspaceId} workspaces={this.state.workspaces} userId = {this.state.userId} onWorkspaceChange={this.onWorkspaceChange}/>
+    }
+
+
+
     return (
       <div  className="App" onClick={ this.setEditorStateToFalse }>
 
@@ -300,7 +337,7 @@ class Workspace extends Component {
             <img className="vector1" src="https://i.ibb.co/whWv1B8/Vector.png"></img>
             <img className="vector2" src="https://i.ibb.co/2yg1z0M/Vector2.png"></img>
             <p>Загрузить</p>
-            <input className="btn-input-hide" type="file" onChange={ this.onChangeHandler }/>
+            <input className={`btn-input-hide ${ hideButtons }`} type="file" onChange={ this.onChangeHandler }/>
           </div>
         </form>
 
@@ -311,14 +348,17 @@ class Workspace extends Component {
 
         <div onClick={(e) => e.stopPropagation()} className={ `editor-container ${ editorState }` }>
           <TextEditor ref={ this.editorRef } content={ this.state.fileEditCurrentText }/>
-          <button className="btn btn-save-note" onClick={ this.textSave }>Сохранить заметку</button>
-          <button className="btn btn-delete-file" onClick={ this.delete }>Удалить элемент</button>
+          <button className={`btn btn-save-note ${ hideButtons }`} onClick={ this.textSave }>Сохранить заметку</button>
+          <button className={`btn btn-delete-file ${ hideButtons }`} onClick={ this.delete }>Удалить элемент</button>
         </div>
 
-        <button className="btn btn-save" onClick={ this.workspaceSave }>Сохранить рабочее пространство</button>
-        <button className="btn btn-add-note" onClick={ this.noteAdd }>Добавить заметку</button>
-        <button className="btn btn-add-conn" onClick={ this.connAdd }>Добавить связь</button>
-
+        <button className={`btn btn-save ${ hideButtons }`} onClick={ this.workspaceSave }>Сохранить рабочее пространство</button>
+        <button className={`btn btn-add-note ${ hideButtons }`} onClick={ this.noteAdd }>Добавить заметку</button>
+        <button className={`btn btn-add-conn ${ hideButtons }`} onClick={ this.connAdd }>Добавить связь</button>
+        <Popup trigger={<button className="btn btn-workspaces">Рабочие пространства</button>} className="popup-workspaces">
+          <div>{dashboard}</div>
+        </Popup>         
+        <NightButton hide={`${ hideButtons }`}/>      
       </div>
     );
   }

@@ -60,6 +60,7 @@ body {
 .box p{
   display: block;
   font-size: 14px;
+  margin: 0;
 }
 
 .btn {
@@ -161,6 +162,20 @@ body {
   position: absolute;
   margin-top: 10px;
   right: 0px;
+}
+
+.btn-workspaces {
+  position: fixed;
+  top: 10px;
+  width: 100px;
+  left: calc(50% - 100px);
+}
+
+.popup-workspaces {
+  top: 200px;
+  left: calc(50% - 150px);
+  width: 150px;
+  height: 200px;
 }
 
 .note-text {
@@ -282,4 +297,30 @@ body {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.btn-create-workspace {
+  width: 100%;
+}
+
+.select-workspaces {
+  width: 100%;
+}
+
+.input-workspace-name {
+  width: 98%;
+}
+
+.select-label {
+  margin: 10px 0 2px;
+  font-family: Roboto;
+  font-size: 12px;
+}
+
+.show {
+  display: block;
+}
+
+.hide {
+  display: none;
 }
