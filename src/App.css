@@ -324,3 +324,8 @@ body {
 .hide {
   display: none;
 }
+
+.btn-night {
+    left: 10px;
+    bottom: 20px;
+}

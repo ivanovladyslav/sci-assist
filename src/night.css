@@ -2,11 +2,6 @@ body.night {
     background-color: #494949;
 }
 
-.btn-night {
-    left: 10px;
-    bottom: 20px;
-}
-
 .night .btn:not(:hover) {
     background: #787878;
 }
